@@ -140,7 +140,7 @@ monocheckboxes = [[sg.Checkbox(':XA', default=False, key="-NN-"), sg.Checkbox(':
 
 #Setup for the singple-point data processing main interface
 dataentries = [
-     [sg.Text("Carmot Single-Point Assay Data Processing Tool",font='Any 18')],
+     [sg.Text("Single-Point Assay Data Processing Tool",font='Any 18')],
      [sg.Frame('Browse to raw screening data folder:', [[sg.Input(key='-rawdata-'), sg.FolderBrowse(target='-rawdata-')]])],
      [sg.Frame('Browse to the chemical database file:', [[sg.Input(key='-oner-'), sg.FileBrowse(target='-oner-')]])],
      [sg.Frame("Please select desired assay plate type:", [[sg.Radio('1536W Assay', "AssayType", default=False, key="-A1536-"), sg.Radio('384W Assay', "AssayType", default=False, key="-A384-")]])],
