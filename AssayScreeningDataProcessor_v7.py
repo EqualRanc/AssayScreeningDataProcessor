@@ -319,7 +319,11 @@ while True:
 #~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~            
             
             # Processes user input
-            assaycheckboxlist = uinput()
+            try:
+                assaycheckboxlist = uinput()
+            except:
+                window['datastatus'].print("Number of raw files does not match chemical class and assay plate exclusions selected.")
+                break
                 
             #Filters One Ring tabs and joins them into one table based on fragment class selections, creates metadata columns
             assayslice = dfilter(oner, assaycheckboxlist)
