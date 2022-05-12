@@ -91,7 +91,7 @@ def normalize1536(foldername):
     for temp in ls:
         if temp[-4:] == '.csv':
             if temp[:0] != '~':
-                if temp[-14:] != 'DB_Upload.csv':
+                if temp[-13:] != 'DB_Upload.csv':
                     if temp[-18:] != 'Plate_Summary.xlsx':
                         ls2.append(temp)
     normalizedcoldata = []
@@ -169,7 +169,8 @@ def uinput():
         #Format for this line is [expression for item in iterable if condition == True]
         assaycheckboxlist = []
         assaycheckboxlist = [x1 for x1 in initialcheckboxlist if not any(x2 == x1 for x2 in excl)]
-    assaycheckboxlist = initialcheckboxlist
+    else:
+        assaycheckboxlist = initialcheckboxlist
     return assaycheckboxlist
 
 def dfilter(oner, assaycheckboxlist):
