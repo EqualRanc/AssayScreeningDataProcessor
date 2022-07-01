@@ -13,6 +13,17 @@ import pandas as pd
 import datetime
 import xlwings as xw
 
+#~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~
+
+#Update tabno (27 in this present case) if new tabs are created. At this time of writing there were 27 tabs
+#excluding the data 99 tab. The data 99 tab does not count for the first argument of processing oner (~line 343). 
+
+tabno = 27
+            
+#~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~            
+            
+
+
 def process_xl(tabs, fullname):
     excel_app = xw.App(visible=False)
     filepath = os.path.expanduser(fullname)
@@ -202,34 +213,54 @@ def dfilter(oner, assaycheckboxlist):
     return assayslice
 
 def psummary(assayslice):
-    apnames = []
+    zinames = []
     if values['-A1536-'] == True:
         assayslice = assayslice[(~assayslice['Molecule Name'].isin(['XB-01', 'BB8900', 'EC57', 'EC98']))]
         datalist, hisdata, losdata, hiadata, loadata, zdata, windowdata = normalize1536(foldername)
         assayslice['% Activity (DMSO) plate'] = datalist
-        apnamestemp = []
+        assayslice.drop('384W ZI',inplace=True,axis=1)
+        assayslice.drop('384W ZI Well',inplace=True,axis=1)
+        zinamestemp = []
         for tab in assaycheckboxlist:
-            apnamestemp.append(oner[tab].loc[0, ['1536W ZI']])
-        for series in apnamestemp:
-            apnames.append(series[0])
+            zinamestemp.append(oner[tab].loc[0, ['1536W ZI']])
+        for series in zinamestemp:
+            zinames.append(series[0])
         assayslice = assayslice[(assayslice['Class'] != 'empty')] #Cleans up DB upload sheet
     if values['-A384-'] == True:
         assayslice = assayslice[(~assayslice['Molecule Name'].isin(['xb', 'BB8900', 'EC57', 'EC98']))]
+        zinamestemp=[]
+        for tab in assaycheckboxlist:
+            apnamestemp.append(oner[tab]['384W ZI'].unique())
+        for array in zinamestemp:
+            for item in array:
+                zinames.append(item)
+        zinames = pd.DataFrame(zinames,columns=['zinames'])
+        if values['-CA-'] == True:
+            assayslice = assayslice[(~assayslice['384W ZI'].isin(['ZI-92']))]
+            zinames = zinames[(~zinames['zinames'].isin(['AP-92']))]
+        if values['-S-'] == True:
+            assayslice = assayslice[(~assayslice['384W ZI'].isin(['ZI-12']))]
+            zinames = zinames[(~zinames['zinames'].isin(['AP-12']))]
+        if values['-O-'] == True:
+            assayslice = assayslice[(~assayslice['384W ZI'].isin(['ZI-56']))]
+            zinames = zinames[(~zinames['zinames'].isin(['ZI-56']))]
+        if values['-AT-'] == True:
+            assayslice = assayslice[(~assayslice['384W ZI'].isin(['ZI-59', 'ZI-60']))]
+            zinames = zinames[(~zinames['zinames'].isin(['ZI-59', 'ZI-60']))]
+        zinames = list(zinames['zinames'])
         datalist, hisdata, losdata, hiadata, loadata, zdata, windowdata = normalize384(foldername)
         assayslice['% Activity (DMSO) plate'] = datalist
-        for tab in assaycheckboxlist:
-            apnamestemp.append(oner[tab].loc[0, ['384W ZI']])
-        for series in apnamestemp:
-            apnames.append(series[0])
-        assayslice = assayslice[(assayslice['Class'] != 'empty')] #Cleans up DB upload sheet
-    return assayslice, apnames, datalist, hisdata, losdata, hiadata, loadata, zdata, windowdata
+        assayslice.drop('1536W ZI',inplace=True,axis=1)
+        assayslice.drop('1536W ZI Well',inplace=True,axis=1)
+        assayslice = assayslice[(assayslice['Class'] != 'empty')] #Cleans up CDD upload sheet
+    return assayslice, zinames, datalist, hisdata, losdata, hiadata, loadata, zdata, windowdata
 
 def pexcel():
     psheaders = ["Plate Name","Fold Window","Z'","High Avg.","High Std. Dev.","Low Avg.","Low Std. Dev."]
     ps = xw.Book()
     pssheet = ps.sheets[0]
     pssheet.range('A1').value = psheaders
-    pssheet.range('A2').options(transpose=True).value = apnames
+    pssheet.range('A2').options(transpose=True).value = zinames
     pssheet.range('B2').options(transpose=True).value = windowdata
     pssheet.range('C2').options(transpose=True).value = zdata
     pssheet.range('D2').options(transpose=True).value = hiadata
@@ -309,15 +340,8 @@ while True:
             assayid = values["-assayid-"]
             conc = values["-conc-"]
             
-#~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~
+            oner = process_xl(tabno, cdb)
 
-#Update the first argument (27 in this present case) if new tabs are created. At this time of writing there were 27 tabs
-#excluding the data 99 tab. The data 99 tab does not count for this argument. Please update the block of if statements
-#below to reflect new tabs if they are created.
-            oner = process_xl(27, cdb)
-            
-#~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~+*^*+~            
-            
             # Processes user input
             try:
                 assaycheckboxlist = uinput()
